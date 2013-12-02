@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>Dop</title>
+</head>
+<body>
+  <div id="dop">
+	<canvas id="saha"></canvas>
+</div>
+<script type="text/javascript">
+window.requestAnimFrame = (function(){
+	return  window.requestAnimationFrame       || 
+		window.webkitRequestAnimationFrame || 
+		window.mozRequestAnimationFrame    || 
+		window.oRequestAnimationFrame      || 
+		window.msRequestAnimationFrame     || 
+		function( callback ){
+		window.setTimeout(callback, 1000 / 60);
+	};
+})();
+
+var bounceDemo = (function() {
+	var bounce = {
+		ball: {
+			posX: 21,
+			posY: 21,
+			speedX: 4,
+			speedY: 0,
+			radius: 20,
+			accelerationX: 0,
+			accelerationY: 1,
+			springiness: 0.95,
+			dampness: 0
+		},
+		canvas: null,
+		ctx: null,
+		debug: false,
+		height: window.innerHeight,
+		width: window.innerWidth,
+		stopped: true,
+		init: function(canvas) {
+			if (canvas == null || !'tagName' in canvas || canvas.tagName != 'CANVAS')
+				return bounce.error('No canvas element provided.');
+			bounce.canvas = canvas;
+			var ctx = bounce.ctx = canvas.getContext('2d');
+			if (!ctx)
+				return bounce.error('Invalid context - canvas is probably not supported');
+
+			canvas.onclick = bounce.rebounce;
+
+			setInterval(bounce.adjustPosition, 16);
+			bounce.start();
+
+			return true;
+		},
+		adjustPosition: function() {
+			var ball = bounce.ball;
+
+			ball.speedX += ball.accelerationX;
+			ball.speedY += ball.accelerationY;
+
+			ball.speedX *= 1 - ball.dampness;
+			ball.speedY *= 1 - ball.dampness;
+
+			ball.posX += ball.speedX;
+			ball.posY += ball.speedY;
+
+			if (ball.posX >= bounce.width - ball.radius && ball.speedX > 0) {
+				ball.speedX *= -ball.springiness;
+				ball.speedY *= ball.springiness;
+				ball.posX = bounce.width - ball.radius;
+			}
+			if (ball.posX <= ball.radius && ball.speedX < 0) {
+				ball.speedX *= -ball.springiness;
+				ball.speedY *= ball.springiness;
+				ball.posX = ball.radius;
+			}
+			if (ball.posY >= bounce.height - ball.radius && ball.speedY > 0) {
+				ball.speedY *= -ball.springiness;
+				ball.speedX *= ball.springiness;
+				ball.posY = bounce.height - ball.radius;
+			}
+			if (ball.posY <= ball.radius && ball.speedY < 0) {
+				ball.speedY *= -ball.springiness;
+				ball.speedX *= ball.springiness;
+				ball.posY = ball.radius;
+			}
+		},
+		drawFrame: function() {
+			if (bounce.stopped)
+				return;
+
+			requestAnimFrame(bounce.drawFrame);
+
+			var ctx = bounce.ctx,
+				ball = bounce.ball;
+
+			ctx.canvas.width = bounce.width;
+
+			ctx.fillStyle = "red";
+			ctx.arc(ball.posX,ball.posY,ball.radius,0,Math.PI * 2);
+			ctx.fill();
+		},
+		stop: function() {
+			bounce.stopped = true;
+		},
+		start: function() {
+			if (bounce.stopped) {
+				bounce.stopped = false;
+				bounce.drawFrame();
+			}
+		},
+		rebounce: function() {
+			bounce.ball.speedX = Math.random() * 100 - 50;
+			bounce.ball.speedY = Math.random() * 100 - 50;
+		},
+		error: function(message) {
+			if (bounce.debug) {
+				//console.error('Bounce error: ', message);
+			}
+			return false;
+		}
+	};
+	return bounce;
+})();
+
+document.getElementById('saha').height = window.innerHeight;
+document.getElementById('saha').width = window.innerWidth;
+
+bounceDemo.init(document.getElementById('saha'));
+
+</script>
+</body>
+</html>
